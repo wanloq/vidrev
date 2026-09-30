@@ -87,18 +87,18 @@
       <!-- 7. SUBMIT BUTTON -->
       <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
         <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition">
-          Submit Review & Refresh
+          Submit Review
         </button>
       </div>
     </form>
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4NKQUjIbHLCOEq2KyKFcnLLDWvfzDb7jitgnFU3PrKKkeAslIigWE43BMtPwhMj0x/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
 
     // POPULATE SPECIFIC REVIEWER IDs
     const reviewerSelect = document.getElementById('reviewerId');
-    const reviewerIds = ['TTA003', 'TTA005', 'TTA007', 'TTA024', 'TTA036', 'TTA077', 'TTA089'];
+    const reviewerIds = ['TTA003', 'TTA005', 'TTA007', 'TTA024', 'TTA036', 'TTA077', 'TTA088'];
     if (reviewerSelect) {
       reviewerSelect.innerHTML = '<option value="">Choose Reviewer ID...</option>';
       reviewerIds.forEach(id => reviewerSelect.add(new Option(id, id)));
