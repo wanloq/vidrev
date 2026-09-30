@@ -149,21 +149,21 @@
     // DYNAMIC VIDEO CARD MANAGEMENT
     let videoCount = 0;
 
+    / DYNAMIC VIDEO CARD MANAGEMENT
+let videoCount = 0;
+    
     function addVideoCard() {
       videoCount++;
-      updateTotalCount();
-      const vId = videoCount;
       const container = document.getElementById('videoContainer');
       const card = document.createElement('div');
       card.className = 'video-card bg-slate-50 dark:bg-slate-900/50 p-5 rounded-lg border-2 border-slate-200 dark:border-slate-700 space-y-4 relative';
-      card.id = `videoCard_${vId}`;
-
+    
       card.innerHTML = `
         <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2">
-          <span class="font-bold text-md text-slate-800 dark:text-slate-100">Video Clip #${vId}</span>
-          ${vId > 1 ? `<button type="button" onclick="removeVideoCard(${vId})" class="text-red-500 text-xs font-semibold hover:underline">Delete Video Card</button>` : ''}
+          <span class="video-card-title font-bold text-md text-slate-800 dark:text-slate-100">Video Clip #${videoCount}</span>
+          <button type="button" onclick="removeVideoCard(this)" class="remove-btn text-red-500 text-xs font-semibold hover:underline">Delete Video Card</button>
         </div>
-
+    
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Video Clip Title *</label>
@@ -174,22 +174,22 @@
             <input type="text" name="videoLength" placeholder="e.g. 05:30" required class="w-full p-2 text-sm border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
           </div>
         </div>
-
+    
         <!-- FAILED SEGMENTS SECTION -->
         <div class="space-y-3 pt-2">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Failed Portions / Segments</span>
           </div>
-          <div id="segmentContainer_${vId}" class="space-y-3"></div>
-          <button type="button" onclick="addSegmentCard(${vId})" class="text-xs bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 px-2.5 py-1 rounded font-semibold transition">+ Add Failed Segment</button>
+          <div class="segment-container space-y-3"></div>
+          <button type="button" onclick="addSegmentCard(this)" class="text-xs bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 px-2.5 py-1 rounded font-semibold transition">+ Add Failed Segment</button>
         </div>
-
+    
         <!-- FINAL REVIEW NOTES FIELD -->
         <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
           <label class="block text-xs font-bold uppercase mb-1 text-slate-600 dark:text-slate-400">Final Review Notes / Feedback for Video Clip</label>
           <textarea name="finalReviewNotes" rows="2" placeholder="Enter final review notes or overall feedback for this clip..." class="w-full p-2.5 text-xs border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
-
+    
         <!-- VERDICT AND GRADE SECTIONS -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-200 dark:border-slate-700">
           <!-- Final Verdict Buttons -->
@@ -201,7 +201,7 @@
               <button type="button" onclick="setVerdict(this, 'Rejected')" class="verdict-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950 transition">Rejected</button>
             </div>
           </div>
-
+    
           <!-- Overall Grade Buttons -->
           <div>
             <label class="block text-xs font-bold uppercase mb-1.5 text-slate-600 dark:text-slate-400">Overall Grade *</label>
@@ -215,13 +215,40 @@
           </div>
         </div>
       `;
+    
       container.appendChild(card);
+      reindexVideoCards();
     }
-
-    function removeVideoCard(id) {
-      const card = document.getElementById(`videoCard_${id}`);
-      if (card) card.remove();
-      updateTotalCount();
+    
+    function removeVideoCard(btn) {
+      const card = btn.closest('.video-card');
+      if (card) {
+        card.remove();
+        reindexVideoCards();
+      }
+    }
+    
+    function reindexVideoCards() {
+      const cards = document.querySelectorAll('.video-card');
+      
+      // Update total count input
+      document.getElementById('totalVideoCount').value = cards.length;
+    
+      // Re-label headers dynamically (e.g. Video Clip #1, Video Clip #2, etc.)
+      cards.forEach((card, index) => {
+        const titleSpan = card.querySelector('.video-card-title');
+        if (titleSpan) {
+          titleSpan.innerText = `Video Clip #${index + 1}`;
+        }
+    
+        // Hide delete button if only 1 card remains
+        const deleteBtn = card.querySelector('.remove-btn');
+        if (deleteBtn) {
+          deleteBtn.style.display = cards.length === 1 ? 'none' : 'inline-block';
+        }
+      });
+    
+      videoCount = cards.length;
     }
 
     function updateTotalCount() {
@@ -229,16 +256,16 @@
       document.getElementById('totalVideoCount').value = currentCards;
     }
 
-    function addSegmentCard(vId) {
-      const segContainer = document.getElementById(`segmentContainer_${vId}`);
+    function addSegmentCard(btn) {
+      const segContainer = btn.closest('.video-card').querySelector('.segment-container');
       const segCount = segContainer.children.length + 1;
       const segCard = document.createElement('div');
       segCard.className = 'segment-card bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700 space-y-2';
-
+    
       segCard.innerHTML = `
         <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-1">
           <span class="text-xs font-bold text-red-600 dark:text-red-400">Failed Segment #${segCount}</span>
-          <button type="button" onclick="this.closest('.segment-card').remove()" class="text-red-500 text-xs hover:underline">Remove</button>
+          <button type="button" onclick="this.closest('.segment-card').remove(); reindexSegments(this);" class="text-red-500 text-xs hover:underline">Remove</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
           <input type="text" name="startTime" placeholder="Start Time (e.g. 01:05)" class="p-2 text-xs border rounded bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600">
