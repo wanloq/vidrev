@@ -96,13 +96,17 @@
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
 
-    // POPULATE REVIEWER IDs (TTAR001 - TTAR007)
+    // POPULATE SPECIFIC REVIEWER IDs
     const reviewerSelect = document.getElementById('reviewerId');
-    for (let i = 1; i <= 7; i++) {
-      const id = `TTAR${String(i).padStart(3, '0')}`;
-      reviewerSelect.add(new Option(id, id));
-    }
+    const reviewerIds = ['TTA003', 'TTA005', 'TTA007', 'TTA024', 'TTA036', 'TTA077', 'TTA089'];
 
+    if (reviewerSelect) {
+      reviewerSelect.innerHTML = '<option value="">Choose Reviewer ID...</option>';
+      reviewerIds.forEach(id => {
+        reviewerSelect.add(new Option(id, id));
+      });
+    }
+    
     // POPULATE TEAM MEMBER IDs (TTA001 - TTA100)
     const teamSelect = document.getElementById('teamMemberId');
     for (let i = 1; i <= 100; i++) {
@@ -145,7 +149,7 @@
     // DYNAMIC VIDEO CARD MANAGEMENT
     let videoCount = 0;
 
-    function addVideoCard() {
+    function addVideoCard() {function addVideoCard() {
       videoCount++;
       updateTotalCount();
       const vId = videoCount;
@@ -175,10 +179,15 @@
         <div class="space-y-3 pt-2">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Failed Portions / Segments</span>
+            <button type="button" onclick="addSegmentCard(${vId})" class="text-xs bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 px-2.5 py-1 rounded font-semibold transition">+ Add Failed Segment</button>
           </div>
           <div id="segmentContainer_${vId}" class="space-y-3"></div>
-          
-            <button type="button" onclick="addSegmentCard(${vId})" class="text-xs bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 px-2.5 py-1 rounded font-semibold transition">+ Add Failed Segment</button>
+        </div>
+
+        <!-- FINAL REVIEW NOTES (NEW FIELD) -->
+        <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
+          <label class="block text-xs font-bold uppercase mb-1 text-slate-600 dark:text-slate-400">Final Review Notes / Feedback for Video Clip</label>
+          <textarea name="finalReviewNotes" rows="2" placeholder="Enter comprehensive final review notes or overall feedback for this clip..." class="w-full p-2.5 text-xs border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
 
         <!-- VERDICT AND GRADE SECTIONS -->
@@ -198,10 +207,10 @@
             <label class="block text-xs font-bold uppercase mb-1.5 text-slate-600 dark:text-slate-400">Overall Grade *</label>
             <input type="hidden" name="overallGrade" required>
             <div class="flex gap-1.5">
-              <button type="button" onclick="setGrade(this, 'B (Brilliant)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Brilliant</button>
-              <button type="button" onclick="setGrade(this, 'G (Good)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Good</button>
-              <button type="button" onclick="setGrade(this, 'A (Acceptable)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Acceptable</button>
-              <button type="button" onclick="setGrade(this, 'P (Poor)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Poor</button>
+              <button type="button" onclick="setGrade(this, 'B (Brilliant)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">B</button>
+              <button type="button" onclick="setGrade(this, 'G (Good)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">G</button>
+              <button type="button" onclick="setGrade(this, 'A (Acceptable)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">A</button>
+              <button type="button" onclick="setGrade(this, 'P (Poor)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">P</button>
             </div>
           </div>
         </div>
@@ -306,6 +315,7 @@
         return {
           title: card.querySelector('[name="videoTitle"]').value,
           length: card.querySelector('[name="videoLength"]').value,
+          notes: card.querySelector('[name="finalReviewNotes"]').value, // Captured here
           verdict: card.querySelector('input[name="finalVerdict"]').value,
           grade: card.querySelector('input[name="overallGrade"]').value,
           failedSegments: failedSegments
