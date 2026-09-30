@@ -94,11 +94,11 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4NKQUjIbHLCOEq2KyKFcnLLDWvfzDb7jitgnFU3PrKKkeAslIigWE43BMtPwhMj0x/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
 
     // POPULATE SPECIFIC REVIEWER IDs
     const reviewerSelect = document.getElementById('reviewerId');
-    const reviewerIds = ['TTA003', 'TTA005', 'TTA007', 'TTA024', 'TTA036', 'TTA077', 'TTA089'];
+    const reviewerIds = ['TTA003', 'TTA005', 'TTA007', 'TTA024', 'TTA036', 'TTA077', 'TTA088', 'TTA100'];
     if (reviewerSelect) {
       reviewerSelect.innerHTML = '<option value="">Choose Reviewer ID...</option>';
       reviewerIds.forEach(id => reviewerSelect.add(new Option(id, id)));
@@ -210,10 +210,10 @@
             <label class="block text-xs font-bold uppercase mb-1.5 text-slate-600 dark:text-slate-400">Overall Grade *</label>
             <input type="hidden" name="overallGrade" required>
             <div class="flex gap-1.5">
-              <button type="button" onclick="setGrade(this, 'B')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">B</button>
-              <button type="button" onclick="setGrade(this, 'G')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">G</button>
-              <button type="button" onclick="setGrade(this, 'A')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">A</button>
-              <button type="button" onclick="setGrade(this, 'P')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">P</button>
+              <button type="button" onclick="setGrade(this, 'B')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Brilliant</button>
+              <button type="button" onclick="setGrade(this, 'G')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Good</button>
+              <button type="button" onclick="setGrade(this, 'A')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Acceptable</button>
+              <button type="button" onclick="setGrade(this, 'P')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Poor</button>
             </div>
           </div>
         </div>
@@ -365,7 +365,7 @@
       }).catch(err => {
         alert('Error submitting review: ' + err);
         btn.disabled = false;
-        btn.innerText = 'Submit Review & Refresh';
+        btn.innerText = 'Submit Review';
       });
     });
   </script>
