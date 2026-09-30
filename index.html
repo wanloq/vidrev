@@ -87,31 +87,31 @@
       <!-- 7. SUBMIT BUTTON -->
       <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
         <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition">
-          Submit Review
+          Submit Review & Refresh
         </button>
       </div>
     </form>
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4NKQUjIbHLCOEq2KyKFcnLLDWvfzDb7jitgnFU3PrKKkeAslIigWE43BMtPwhMj0x/exec';
 
     // POPULATE SPECIFIC REVIEWER IDs
     const reviewerSelect = document.getElementById('reviewerId');
     const reviewerIds = ['TTA003', 'TTA005', 'TTA007', 'TTA024', 'TTA036', 'TTA077', 'TTA089'];
-
     if (reviewerSelect) {
       reviewerSelect.innerHTML = '<option value="">Choose Reviewer ID...</option>';
-      reviewerIds.forEach(id => {
-        reviewerSelect.add(new Option(id, id));
-      });
+      reviewerIds.forEach(id => reviewerSelect.add(new Option(id, id)));
     }
-    
+
     // POPULATE TEAM MEMBER IDs (TTA001 - TTA100)
     const teamSelect = document.getElementById('teamMemberId');
-    for (let i = 1; i <= 100; i++) {
-      const id = `TTA${String(i).padStart(3, '0')}`;
-      teamSelect.add(new Option(id, id));
+    if (teamSelect) {
+      teamSelect.innerHTML = '<option value="">Choose Team Member ID...</option>';
+      for (let i = 1; i <= 100; i++) {
+        const id = `TTA${String(i).padStart(3, '0')}`;
+        teamSelect.add(new Option(id, id));
+      }
     }
 
     // LOAD EXTERNAL TASK LISTS BASED ON ACTIVITY TYPE
@@ -149,7 +149,7 @@
     // DYNAMIC VIDEO CARD MANAGEMENT
     let videoCount = 0;
 
-    function addVideoCard() {function addVideoCard() {
+    function addVideoCard() {
       videoCount++;
       updateTotalCount();
       const vId = videoCount;
@@ -184,10 +184,10 @@
           <div id="segmentContainer_${vId}" class="space-y-3"></div>
         </div>
 
-        <!-- FINAL REVIEW NOTES (NEW FIELD) -->
+        <!-- FINAL REVIEW NOTES FIELD -->
         <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
           <label class="block text-xs font-bold uppercase mb-1 text-slate-600 dark:text-slate-400">Final Review Notes / Feedback for Video Clip</label>
-          <textarea name="finalReviewNotes" rows="2" placeholder="Enter comprehensive final review notes or overall feedback for this clip..." class="w-full p-2.5 text-xs border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          <textarea name="finalReviewNotes" rows="2" placeholder="Enter final review notes or overall feedback for this clip..." class="w-full p-2.5 text-xs border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
 
         <!-- VERDICT AND GRADE SECTIONS -->
@@ -207,10 +207,10 @@
             <label class="block text-xs font-bold uppercase mb-1.5 text-slate-600 dark:text-slate-400">Overall Grade *</label>
             <input type="hidden" name="overallGrade" required>
             <div class="flex gap-1.5">
-              <button type="button" onclick="setGrade(this, 'B (Brilliant)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">B</button>
-              <button type="button" onclick="setGrade(this, 'G (Good)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">G</button>
-              <button type="button" onclick="setGrade(this, 'A (Acceptable)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">A</button>
-              <button type="button" onclick="setGrade(this, 'P (Poor)')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">P</button>
+              <button type="button" onclick="setGrade(this, 'B')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">B</button>
+              <button type="button" onclick="setGrade(this, 'G')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">G</button>
+              <button type="button" onclick="setGrade(this, 'A')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">A</button>
+              <button type="button" onclick="setGrade(this, 'P')" class="grade-btn flex-1 py-2 text-xs font-bold rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition">P</button>
             </div>
           </div>
         </div>
@@ -279,7 +279,6 @@
     document.getElementById('reviewForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
-      // Check required button selections
       let valid = true;
       document.querySelectorAll('.video-card').forEach((card, idx) => {
         const v = card.querySelector('input[name="finalVerdict"]').value;
@@ -315,7 +314,7 @@
         return {
           title: card.querySelector('[name="videoTitle"]').value,
           length: card.querySelector('[name="videoLength"]').value,
-          notes: card.querySelector('[name="finalReviewNotes"]').value, // Captured here
+          notes: card.querySelector('[name="finalReviewNotes"]').value,
           verdict: card.querySelector('input[name="finalVerdict"]').value,
           grade: card.querySelector('input[name="overallGrade"]').value,
           failedSegments: failedSegments
@@ -329,7 +328,7 @@
         body: JSON.stringify({ commonInfo, videos })
       }).then(() => {
         alert('Review submitted successfully!');
-        location.reload(); // Refresh form upon submission
+        location.reload();
       }).catch(err => {
         alert('Error submitting review: ' + err);
         btn.disabled = false;
