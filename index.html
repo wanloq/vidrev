@@ -191,7 +191,7 @@
     
     // Main function to update total task length across all video cards
     function updateTotalTaskLength() {
-      const durationInputs = document.querySelectorAll('.video-card input[name$="_clipLength"]');
+      const durationInputs = document.querySelectorAll('.video-card input[name="videoLength"]');
       let totalSeconds = 0;
     
       durationInputs.forEach((input) => {
@@ -213,7 +213,7 @@
       const container = document.getElementById('videoContainer');
       const card = document.createElement('div');
       card.className = 'video-card bg-slate-50 dark:bg-slate-900/50 p-5 rounded-lg border-2 border-slate-200 dark:border-slate-700 space-y-4 relative';
-      
+
       card.innerHTML = `
         <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2">
           <span class="video-card-title font-bold text-md text-slate-800 dark:text-slate-100">Video Clip #${videoCount}</span>
@@ -282,7 +282,7 @@
       if (lengthInput) {
         lengthInput.addEventListener('input', updateTotalTaskLength);
       }
-      
+
       container.appendChild(card);
       reindexVideoCards();
     }
@@ -292,7 +292,7 @@
       if (card) {
         card.remove();
         reindexVideoCards();
-        updateTotalTaskLength(); // Recalculate duration after removing a card
+        updateTotalTaskLength();
       }
     }
 
@@ -339,7 +339,6 @@
       const segContainer = btn.closest('.segment-container');
       btn.closest('.segment-card').remove();
       
-      // Re-index failed segment headers
       const segs = segContainer.querySelectorAll('.segment-card');
       segs.forEach((seg, idx) => {
         const title = seg.querySelector('.segment-title');
