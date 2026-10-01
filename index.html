@@ -66,6 +66,21 @@
           <label class="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">5. Total Number of Video Clips Submitted</label>
           <input type="text" id="totalVideoCount" value="0" readonly class="w-full p-2.5 text-sm font-bold bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 cursor-not-allowed">
         </div>
+      
+        <!-- 5b. Total Length of Task -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            6. Total Length of Task (Dynamic)
+          </label>
+          <input 
+            type="text" 
+            id="totalTaskLength" 
+            name="totalTaskLength" 
+            readonly 
+            placeholder="00:00" 
+            class="w-full bg-slate-900/60 border border-slate-700/60 text-slate-300 font-mono text-sm rounded-lg px-3.5 py-2.5 focus:outline-none cursor-not-allowed"
+          />
+        </div>
       </div>
 
       <!-- 6. VIDEO CARDS SECTION -->
@@ -146,6 +161,50 @@
         });
     });
 
+    // Helper: Convert MM:SS or HH:MM:SS string to total seconds
+    function timeToSeconds(timeStr) {
+      if (!timeStr) return 0;
+      const parts = timeStr.trim().split(':').map(Number);
+      if (parts.some(isNaN)) return 0;
+    
+      if (parts.length === 2) {
+        return parts[0] * 60 + parts[1]; // MM:SS
+      } else if (parts.length === 3) {
+        return parts[0] * 3600 + parts[1] * 60 + parts[2]; // HH:MM:SS
+      }
+      return 0;
+    }
+    
+    // Helper: Convert total seconds to MM:SS or HH:MM:SS format
+    function secondsToFormattedTime(totalSeconds) {
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+    
+      const pad = (num) => String(num).padStart(2, '0');
+    
+      if (hrs > 0) {
+        return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+      }
+      return `${pad(mins)}:${pad(secs)}`;
+    }
+    
+    // Main function to update total task length across all video cards
+    function updateTotalTaskLength() {
+      const durationInputs = document.querySelectorAll('.video-card input[name$="_clipLength"]');
+      let totalSeconds = 0;
+    
+      durationInputs.forEach((input) => {
+        totalSeconds += timeToSeconds(input.value);
+      });
+    
+      const formattedTime = secondsToFormattedTime(totalSeconds);
+      const totalTaskInput = document.getElementById('totalTaskLength');
+      if (totalTaskInput) {
+        totalTaskInput.value = formattedTime;
+      }
+    }
+
     // DYNAMIC VIDEO CARD MANAGEMENT
     let videoCount = 0;
 
@@ -154,7 +213,7 @@
       const container = document.getElementById('videoContainer');
       const card = document.createElement('div');
       card.className = 'video-card bg-slate-50 dark:bg-slate-900/50 p-5 rounded-lg border-2 border-slate-200 dark:border-slate-700 space-y-4 relative';
-
+      
       card.innerHTML = `
         <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2">
           <span class="video-card-title font-bold text-md text-slate-800 dark:text-slate-100">Video Clip #${videoCount}</span>
@@ -219,6 +278,11 @@
         </div>
       `;
 
+      const lengthInput = card.querySelector('input[name="videoLength"]');
+      if (lengthInput) {
+        lengthInput.addEventListener('input', updateTotalTaskLength);
+      }
+      
       container.appendChild(card);
       reindexVideoCards();
     }
@@ -228,6 +292,7 @@
       if (card) {
         card.remove();
         reindexVideoCards();
+        updateTotalTaskLength(); // Recalculate duration after removing a card
       }
     }
 
@@ -332,7 +397,8 @@
         teamMemberId: document.getElementById('teamMemberId').value,
         activityType: document.getElementById('activityType').value,
         selectedTask: document.getElementById('taskSelect').value,
-        totalVideos: document.getElementById('totalVideoCount').value
+        totalVideos: document.getElementById('totalVideoCount').value,
+        totalTaskLength: document.getElementById('totalTaskLength').value || '00:00'
       };
 
       const videoCards = document.querySelectorAll('.video-card');
