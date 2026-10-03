@@ -17,8 +17,36 @@
     <h1 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Egocentric Video Review Logger</h1>
     <p class="text-slate-600 dark:text-slate-400 mb-6 text-sm">Log review feedback, timestamp failed segments, and record final video quality grades.</p>
 
+    <!-- 3b. LOOKUP EXISTING REVIEW SECTION -->
+    <div class="bg-blue-50 dark:bg-slate-900/80 p-4 rounded-lg border border-blue-200 dark:border-slate-700 mb-6 space-y-2">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">Retrieve Existing Review</h2>
+      <div class="flex gap-2">
+        <input 
+          type="text" 
+          id="lookupReviewId" 
+          placeholder="Enter Review ID (e.g., REV12345)" 
+          class="flex-1 p-2.5 text-sm border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 uppercase font-mono outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button 
+          type="button" 
+          onclick="fetchReviewData()" 
+          id="lookupBtn" 
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition"
+        >
+          Load Review
+        </button>
+      </div>
+      <p id="lookupStatus" class="text-xs text-slate-500 dark:text-slate-400"></p>
+    </div>
+
     <form id="reviewForm" class="space-y-6">
       
+      <!-- CURRENT REVIEW ID HIDDEN/DISPLAY -->
+      <div class="flex justify-between items-center text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">
+        <span>ACTIVE REVIEW ID: <strong id="currentReviewIdDisplay" class="text-blue-600 dark:text-blue-400">NEW SUBMISSION</strong></span>
+        <input type="hidden" id="reviewId" name="reviewId" value="">
+      </div>
+
       <!-- 1-6: COMMON HEADER INFO -->
       <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
         <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2">Session Overview</h2>
@@ -71,13 +99,13 @@
         
           <!-- 6. Total Length of Task -->
           <div>
-            <label class="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">6. Total Length of Task (Dynamic)</label>
+            <label class="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">6. Total Length of Task (HH:MM:SS)</label>
             <input 
               type="text" 
               id="totalTaskLength" 
               name="totalTaskLength" 
               readonly 
-              value="00:00" 
+              value="00:00:00" 
               class="w-full p-2.5 text-sm font-mono font-bold bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 cursor-not-allowed"
             />
           </div>
@@ -94,7 +122,7 @@
 
         <!-- Add Video Button -->
         <div class="pt-2">
-          <button type="button" onclick="addVideoCard()" class="w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-semibold py-2.5 px-4 rounded-lg border border-slate-300 dark:border-slate-600 transition flex items-center justify-center gap-2">
+          <button type="button" onclick="addVideoCard(); markDirty();" class="w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-semibold py-2.5 px-4 rounded-lg border border-slate-300 dark:border-slate-600 transition flex items-center justify-center gap-2">
             <span>+</span> Add Video Card
           </button>
         </div>
@@ -111,6 +139,9 @@
 
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
+
+    let isFormDirty = false;
+    let isSubmitting = false;
 
     // POPULATE SPECIFIC REVIEWER IDs
     const reviewerSelect = document.getElementById('reviewerId');
@@ -135,18 +166,21 @@
     const taskSelect = document.getElementById('taskSelect');
 
     activitySelect.addEventListener('change', function() {
-      const type = this.value;
+      loadTaskOptions(this.value);
+    });
+
+    function loadTaskOptions(type, targetValue = '') {
       taskSelect.innerHTML = '<option value="">Loading tasks...</option>';
       taskSelect.disabled = true;
 
       if (!type) {
         taskSelect.innerHTML = '<option value="">Select Activity Type First...</option>';
-        return;
+        return Promise.resolve();
       }
 
       const file = type === 'Residential' ? 'residential_tasks.json' : 'commercial_tasks.json';
 
-      fetch(file)
+      return fetch(file)
         .then(res => {
           if (!res.ok) throw new Error('File not found');
           return res.json();
@@ -155,14 +189,15 @@
           taskSelect.innerHTML = '<option value="">Choose Task...</option>';
           tasks.forEach(t => taskSelect.add(new Option(t, t)));
           taskSelect.disabled = false;
+          if (targetValue) taskSelect.value = targetValue;
         })
         .catch(err => {
           console.error('Task loading error:', err);
           taskSelect.innerHTML = '<option value="">Error loading task file</option>';
         });
-    });
+    }
 
-    // Helper: Convert MM:SS or HH:MM:SS string to total seconds
+    // 0. TIME FORMATTING AND CONVERSION (HH:MM:SS GUARANTEE)
     function timeToSeconds(timeStr) {
       if (!timeStr) return 0;
       const parts = timeStr.trim().split(':').map(Number);
@@ -176,21 +211,16 @@
       return 0;
     }
     
-    // Helper: Convert total seconds to MM:SS or HH:MM:SS format
     function secondsToFormattedTime(totalSeconds) {
       const hrs = Math.floor(totalSeconds / 3600);
       const mins = Math.floor((totalSeconds % 3600) / 60);
       const secs = totalSeconds % 60;
     
       const pad = (num) => String(num).padStart(2, '0');
-    
-      if (hrs > 0) {
-        return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
-      }
-      return `${pad(mins)}:${pad(secs)}`;
+      // Enforce HH:MM:SS format
+      return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
     }
     
-    // Main function to update total task length across all video cards
     function updateTotalTaskLength() {
       const durationInputs = document.querySelectorAll('.video-card input[name="videoLength"]');
       let totalSeconds = 0;
@@ -204,6 +234,36 @@
       if (totalTaskInput) {
         totalTaskInput.value = formattedTime;
       }
+      triggerAutosave();
+    }
+
+    // 1. PREVENT ACCIDENTAL RELOAD / DATA LOSS
+    function markDirty() {
+      isFormDirty = true;
+      triggerAutosave();
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+      if (isFormDirty && !isSubmitting) {
+        e.preventDefault();
+        e.returnValue = ''; // Standard browser confirmation popup trigger
+      }
+    });
+
+    document.getElementById('reviewForm').addEventListener('input', markDirty);
+    document.getElementById('reviewForm').addEventListener('change', markDirty);
+
+    // 2b. REVIEW ID GENERATOR
+    function generateReviewId() {
+      const randomNum = Math.floor(10000 + Math.random() * 90000);
+      return `REV${randomNum}`;
+    }
+
+    function setReviewId(id) {
+      const field = document.getElementById('reviewId');
+      const display = document.getElementById('currentReviewIdDisplay');
+      field.value = id;
+      display.innerText = id || 'NEW SUBMISSION';
     }
 
     // DYNAMIC VIDEO CARD MANAGEMENT
@@ -227,35 +287,27 @@
             <input type="text" name="videoTitle" placeholder="e.g. Video-1 Title" required class="w-full p-2 text-sm border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Video Clip Length *</label>
-            <input type="text" name="videoLength" placeholder="e.g. 05:30" required class="w-full p-2 text-sm border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Video Clip Length (e.g. 05:30) *</label>
+            <input type="text" name="videoLength" placeholder="HH:MM:SS or MM:SS" required class="w-full p-2 text-sm border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
           </div>
         </div>
 
-        <!-- FAILED SEGMENTS SECTION -->
         <div class="space-y-3 pt-2">
           <span class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Failed Portions / Segments</span>
-          
-          <!-- Segments List -->
           <div class="segment-container space-y-3"></div>
-
-          <!-- Add Segment Button Below Section -->
           <div>
-            <button type="button" onclick="addSegmentCard(this)" class="w-full py-2 text-xs bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800/50 rounded-lg font-semibold transition flex items-center justify-center gap-1">
+            <button type="button" onclick="addSegmentCard(this); markDirty();" class="w-full py-2 text-xs bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800/50 rounded-lg font-semibold transition flex items-center justify-center gap-1">
               <span>+</span> Add Failed Segment
             </button>
           </div>
         </div>
 
-        <!-- FINAL REVIEW NOTES FIELD -->
         <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
           <label class="block text-xs font-bold uppercase mb-1 text-slate-600 dark:text-slate-400">Final Review Notes / Feedback for Video Clip</label>
           <textarea name="finalReviewNotes" rows="2" placeholder="Enter final review notes or overall feedback for this clip..." class="w-full p-2.5 text-xs border rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
 
-        <!-- VERDICT AND GRADE SECTIONS -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-          <!-- Final Verdict Buttons -->
           <div>
             <label class="block text-xs font-bold uppercase mb-1.5 text-slate-600 dark:text-slate-400">Final Verdict *</label>
             <input type="hidden" name="finalVerdict" required>
@@ -265,7 +317,6 @@
             </div>
           </div>
 
-          <!-- Overall Grade Buttons -->
           <div>
             <label class="block text-xs font-bold uppercase mb-1.5 text-slate-600 dark:text-slate-400">Overall Grade *</label>
             <input type="hidden" name="overallGrade" required>
@@ -281,13 +332,13 @@
 
       container.appendChild(card);
 
-      // Attach input event listener after card HTML is inserted into DOM
       const lengthInput = card.querySelector('input[name="videoLength"]');
       if (lengthInput) {
         lengthInput.addEventListener('input', updateTotalTaskLength);
       }
 
       reindexVideoCards();
+      return card;
     }
 
     function removeVideoCard(btn) {
@@ -296,6 +347,7 @@
         card.remove();
         reindexVideoCards();
         updateTotalTaskLength();
+        markDirty();
       }
     }
 
@@ -318,8 +370,11 @@
       videoCount = cards.length;
     }
 
-    function addSegmentCard(btn) {
-      const segContainer = btn.closest('.video-card').querySelector('.segment-container');
+    function addSegmentCard(btnOrContainer) {
+      const segContainer = btnOrContainer.classList && btnOrContainer.classList.contains('segment-container') 
+        ? btnOrContainer 
+        : btnOrContainer.closest('.video-card').querySelector('.segment-container');
+
       const segCount = segContainer.children.length + 1;
       const segCard = document.createElement('div');
       segCard.className = 'segment-card bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700 space-y-2';
@@ -336,6 +391,7 @@
         <input type="text" name="remark" placeholder="Reviewer remark for failure..." class="w-full p-2 text-xs border rounded bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600">
       `;
       segContainer.appendChild(segCard);
+      return segCard;
     }
 
     function removeSegmentCard(btn) {
@@ -347,9 +403,9 @@
         const title = seg.querySelector('.segment-title');
         if (title) title.innerText = `Failed Segment #${idx + 1}`;
       });
+      markDirty();
     }
 
-    // BUTTON SELECTION TOGGLES
     function setVerdict(btn, value) {
       const parent = btn.closest('div');
       parent.querySelectorAll('.verdict-btn').forEach(b => {
@@ -359,6 +415,7 @@
       btn.classList.remove('bg-white', 'dark:bg-slate-800');
       btn.classList.add(value === 'Approved' ? 'bg-emerald-600' : 'bg-red-600', 'text-white', 'border-transparent');
       btn.closest('div').parentElement.querySelector('input[name="finalVerdict"]').value = value;
+      markDirty();
     }
 
     function setGrade(btn, value) {
@@ -370,14 +427,145 @@
       btn.classList.remove('bg-white', 'dark:bg-slate-800');
       btn.classList.add('bg-blue-600', 'text-white', 'border-transparent');
       btn.closest('div').parentElement.querySelector('input[name="overallGrade"]').value = value;
+      markDirty();
     }
 
-    // INITIALIZE FIRST CARD ON LOAD
-    addVideoCard();
+    // 4. AUTOSAVE FORM DATA TO LOCALSTORAGE
+    function serializeFormState() {
+      return {
+        reviewId: document.getElementById('reviewId').value,
+        reviewerId: document.getElementById('reviewerId').value,
+        teamMemberId: document.getElementById('teamMemberId').value,
+        activityType: document.getElementById('activityType').value,
+        selectedTask: document.getElementById('taskSelect').value,
+        videos: Array.from(document.querySelectorAll('.video-card')).map(card => ({
+          title: card.querySelector('[name="videoTitle"]').value,
+          length: card.querySelector('[name="videoLength"]').value,
+          notes: card.querySelector('[name="finalReviewNotes"]').value,
+          verdict: card.querySelector('input[name="finalVerdict"]').value,
+          grade: card.querySelector('input[name="overallGrade"]').value,
+          failedSegments: Array.from(card.querySelectorAll('.segment-card')).map(s => ({
+            startTime: s.querySelector('[name="startTime"]').value,
+            finishTime: s.querySelector('[name="finishTime"]').value,
+            remark: s.querySelector('[name="remark"]').value
+          }))
+        }))
+      };
+    }
 
-    // SUBMIT & REFRESH FORM
+    function triggerAutosave() {
+      if (isSubmitting) return;
+      const data = serializeFormState();
+      localStorage.setItem('review_form_autosave', JSON.stringify(data));
+    }
+
+    function populateFormFromData(data) {
+      setReviewId(data.reviewId || '');
+      document.getElementById('reviewerId').value = data.reviewerId || '';
+      document.getElementById('teamMemberId').value = data.teamMemberId || '';
+      document.getElementById('activityType').value = data.activityType || '';
+
+      loadTaskOptions(data.activityType, data.selectedTask).then(() => {
+        document.getElementById('videoContainer').innerHTML = '';
+        videoCount = 0;
+
+        if (data.videos && data.videos.length > 0) {
+          data.videos.forEach(v => {
+            const card = addVideoCard();
+            card.querySelector('[name="videoTitle"]').value = v.title || '';
+            card.querySelector('[name="videoLength"]').value = v.length || '';
+            card.querySelector('[name="finalReviewNotes"]').value = v.notes || '';
+
+            if (v.verdict) {
+              const vBtn = Array.from(card.querySelectorAll('.verdict-btn')).find(b => b.innerText.trim() === v.verdict);
+              if (vBtn) setVerdict(vBtn, v.verdict);
+            }
+            if (v.grade) {
+              const gradeMap = { 'B': 'Brilliant', 'G': 'Good', 'A': 'Acceptable', 'P': 'Poor' };
+              const targetTxt = gradeMap[v.grade] || v.grade;
+              const gBtn = Array.from(card.querySelectorAll('.grade-btn')).find(b => b.innerText.trim() === targetTxt);
+              if (gBtn) setGrade(gBtn, v.grade);
+            }
+
+            if (v.failedSegments && v.failedSegments.length > 0) {
+              v.failedSegments.forEach(seg => {
+                const segCard = addSegmentCard(card.querySelector('.segment-container'));
+                segCard.querySelector('[name="startTime"]').value = seg.startTime || '';
+                segCard.querySelector('[name="finishTime"]').value = seg.finishTime || '';
+                segCard.querySelector('[name="remark"]').value = seg.remark || '';
+              });
+            }
+          });
+        } else {
+          addVideoCard();
+        }
+        updateTotalTaskLength();
+      });
+    }
+
+    function restoreAutosave() {
+      const saved = localStorage.getItem('review_form_autosave');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          populateFormFromData(data);
+        } catch(e) {
+          console.error("Could not parse autosave state", e);
+          addVideoCard();
+        }
+      } else {
+        addVideoCard();
+      }
+    }
+
+    // 3b. RETRIEVE REVIEW DATA FROM APPS SCRIPT
+    function fetchReviewData() {
+      const id = document.getElementById('lookupReviewId').value.trim().toUpperCase();
+      const statusEl = document.getElementById('lookupStatus');
+      const lookupBtn = document.getElementById('lookupBtn');
+
+      if (!id) {
+        statusEl.innerText = 'Please enter a valid Review ID.';
+        statusEl.className = 'text-xs text-red-500';
+        return;
+      }
+
+      lookupBtn.disabled = true;
+      statusEl.innerText = 'Fetching review data...';
+      statusEl.className = 'text-xs text-blue-500';
+
+      fetch(`${SCRIPT_URL}?reviewId=${encodeURIComponent(id)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success' && res.data) {
+            populateFormFromData(res.data);
+            statusEl.innerText = `Review ${id} loaded successfully!`;
+            statusEl.className = 'text-xs text-emerald-600 font-semibold';
+            isFormDirty = false;
+          } else {
+            statusEl.innerText = res.message || 'Review ID not found.';
+            statusEl.className = 'text-xs text-red-500';
+          }
+        })
+        .catch(err => {
+          statusEl.innerText = 'Error loading review: ' + err.message;
+          statusEl.className = 'text-xs text-red-500';
+        })
+        .finally(() => {
+          lookupBtn.disabled = false;
+        });
+    }
+
+    // INITIALIZE FORM ON LOAD
+    restoreAutosave();
+
+    // 2. SUBMIT REVIEW WITH CONFIRMATION PROMPT
     document.getElementById('reviewForm').addEventListener('submit', function(e) {
       e.preventDefault();
+
+      // 2. Confirmation modal prompt
+      const confirmSubmit = confirm('Are you sure you want to submit this review?');
+      if (!confirmSubmit) return;
 
       let valid = true;
       document.querySelectorAll('.video-card').forEach((card, idx) => {
@@ -393,14 +581,23 @@
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.innerText = 'Submitting Review...';
+      isSubmitting = true;
+
+      // 2b. Generate Review ID if new
+      let activeReviewId = document.getElementById('reviewId').value;
+      if (!activeReviewId) {
+        activeReviewId = generateReviewId();
+        setReviewId(activeReviewId);
+      }
 
       const commonInfo = {
+        reviewId: activeReviewId,
         reviewerId: document.getElementById('reviewerId').value,
         teamMemberId: document.getElementById('teamMemberId').value,
         activityType: document.getElementById('activityType').value,
         selectedTask: document.getElementById('taskSelect').value,
         totalVideos: document.getElementById('totalVideoCount').value,
-        totalTaskLength: document.getElementById('totalTaskLength').value || '00:00'
+        totalTaskLength: document.getElementById('totalTaskLength').value || '00:00:00'
       };
 
       const videoCards = document.querySelectorAll('.video-card');
@@ -424,16 +621,25 @@
 
       fetch(SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ commonInfo, videos })
-      }).then(() => {
-        alert('Review submitted successfully!');
-        location.reload();
-      }).catch(err => {
-        alert('Error submitting review: ' + err);
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'success') {
+          alert(`Review ${activeReviewId} submitted successfully!`);
+          localStorage.removeItem('review_form_autosave');
+          isFormDirty = false;
+          location.reload();
+        } else {
+          throw new Error(res.message || 'Submission failed.');
+        }
+      })
+      .catch(err => {
+        alert('Error submitting review: ' + err.message);
         btn.disabled = false;
         btn.innerText = 'Submit Review';
+        isSubmitting = false;
       });
     });
   </script>
