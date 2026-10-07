@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Review Portal</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--tx:#1d1d1f;--mut:#6e6e73;--gl:rgba(255,255,255,.58);--bd:rgba(255,255,255,.8);--sh:0 8px 32px rgba(31,38,135,.12);--ok:#30a46c;--bad:#e5484d;--acc:#0a84ff;--wa:#f5a524;--pill:rgba(120,120,140,.14);--in:rgba(255,255,255,.65)}
+@media(prefers-color-scheme:dark){:root{--tx:#f5f5f7;--mut:#a1a1a6;--gl:rgba(30,30,38,.55);--bd:rgba(255,255,255,.12);--sh:0 8px 32px rgba(0,0,0,.45);--pill:rgba(255,255,255,.1);--in:rgba(255,255,255,.08)}body{background:#0b0b12}}
+*{box-sizing:border-box;margin:0}[hidden]{display:none!important}
+body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,sans-serif;color:var(--tx);background:#eef1f8;min-height:100vh;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(45vw 45vw at 8% 8%,#7db4ff80,transparent),radial-gradient(45vw 45vw at 92% 18%,#ff9fd066,transparent),radial-gradient(55vw 55vw at 50% 105%,#6fe8b955,transparent)}
+.glass{background:var(--gl);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--bd);border-radius:24px;box-shadow:var(--sh)}
+.mut{color:var(--mut)}.c{text-align:center}
+#login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login{width:100%;max-width:400px;padding:40px 34px;display:grid;gap:16px}
+.login.shake{animation:sk .4s}@keyframes sk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.logo{width:60px;height:60px;border-radius:18px;margin:0 auto;display:grid;place-items:center;color:#fff;font-size:22px;background:linear-gradient(135deg,#0a84ff,#bf5af2);box-shadow:0 10px 24px #0a84ff55}
+h1{font-size:28px;letter-spacing:-.02em;font-weight:700}.login h1,.login p{text-align:center}
+label{display:grid;gap:6px;font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+input{font:inherit;font-size:16px;text-transform:none;letter-spacing:0;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:14px;padding:13px 15px;outline:none;transition:.2s}
+input:focus{border-color:var(--acc);box-shadow:0 0 0 4px #0a84ff30}
+#uid{text-transform:uppercase}
+.btn{font:inherit;font-weight:600;border:0;border-radius:14px;padding:13px 20px;color:#fff;background:linear-gradient(135deg,#0a84ff,#5e5ce6);cursor:pointer;transition:.2s;box-shadow:0 8px 20px #0a84ff40}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.6;cursor:wait}
+.btn.sm{padding:9px 16px;font-size:14px}.btn.ghost{background:var(--pill);color:var(--tx);box-shadow:none}
+.err{color:var(--bad);min-height:20px;font-size:13px}
+.wrap{max-width:1100px;margin:0 auto;padding:36px 20px 90px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.acts{display:flex;gap:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:16px;margin-bottom:20px}
+.st{padding:20px;display:grid;gap:2px;transition:.25s}.st:hover{transform:translateY(-3px)}
+.st span{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.st b{font-size:30px;letter-spacing:-.02em;line-height:1.2}.st small{color:var(--mut);font-size:12.5px}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px;margin-bottom:40px}
+.cc{padding:22px}.cc h3{font-size:15px;font-weight:600;margin-bottom:12px}.cv{position:relative;height:260px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.bar h2{font-size:22px;letter-spacing:-.01em}.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ctl input{padding:9px 14px;font-size:14px;width:200px}
+.seg{display:flex;background:var(--pill);border-radius:12px;padding:3px}
+.seg button{font:inherit;font-size:13px;font-weight:600;border:0;background:none;color:var(--mut);padding:6px 13px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--gl);color:var(--tx);box-shadow:0 1px 4px #0002}
+.rv{margin-bottom:14px;overflow:hidden}
+.rh{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;flex-wrap:wrap}
+.rh b{font-size:16px;display:block}.rh small{color:var(--mut)}
+.mt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--mut);font-size:13px}
+.mt i{font-style:normal;font-size:22px;transition:.3s;margin-left:4px}.rv.open .mt i{transform:rotate(90deg)}
+.rb{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}.rv.open .rb{grid-template-rows:1fr}.rb>div{overflow:hidden}
+.clip{margin:0 14px 10px;padding:13px 15px;border-radius:16px;background:var(--in);cursor:pointer;transition:.2s}.clip:hover{background:var(--pill)}.rb>div>.clip:first-child{margin-top:2px}.rb>div>.clip:last-child{margin-bottom:16px}
+.ct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.tt{flex:1;min-width:140px;font-weight:600;word-break:break-all}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--pill)}
+.pill.ok{background:#30a46c26;color:var(--ok)}.pill.bad{background:#e5484d26;color:var(--bad)}.pill.gd{background:#0a84ff22;color:var(--acc)}
+.sg{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.sg span{font-size:12px;background:#e5484d1c;color:var(--bad);padding:3px 10px;border-radius:99px}
+.md{position:fixed;inset:0;z-index:9;display:grid;place-items:center;padding:20px;background:#0006;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.sheet{width:100%;max-width:560px;max-height:85vh;overflow:auto;padding:28px;position:relative;animation:pop .25s ease}@keyframes pop{from{transform:scale(.94);opacity:0}}
+.x{position:absolute;top:16px;right:16px;border:0;width:30px;height:30px;border-radius:50%;background:var(--pill);color:var(--tx);cursor:pointer}
+.sheet h2{font-size:20px;margin:0 36px 8px 0;word-break:break-all}.sheet h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:20px 0 8px}
+.note{background:var(--in);border-radius:14px;padding:14px;white-space:pre-wrap}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--pill)}
+.th{display:grid;grid-template-columns:150px 1fr 40px;gap:10px;align-items:center;font-size:13px;margin:7px 0}.th i{height:8px;border-radius:9px;background:linear-gradient(90deg,#0a84ff,#bf5af2);display:block}
+@media(max-width:560px){.ctl input{width:100%}.th{grid-template-columns:110px 1fr 30px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<!-- STEP 1: LOGIN -->
+<section id="login">
+  <form id="lf" class="glass login">
+    <div class="logo">&#9654;</div>
+    <h1>Review Portal</h1>
+    <p class="mut">Sign in to see how your video submissions were reviewed.</p>
+    <label>User ID<input id="uid" placeholder="e.g. TTA057" autocomplete="username" required></label>
+    <label>Password<input id="pw" type="password" placeholder="Your password" autocomplete="current-password" required></label>
+    <button id="lb" class="btn">Sign in</button>
+    <p id="err" class="err"></p>
+  </form>
+</section>
+
+<!-- STEP 2: DASHBOARD -->
+<main id="app" class="wrap" hidden>
+  <header class="top">
+    <div><p class="mut">Welcome back</p><h1 id="hi"></h1><p id="sub" class="mut"></p></div>
+    <div class="acts"><button class="btn sm" id="ins">&#10022; Insights</button><button class="btn sm ghost" id="out">Sign out</button></div>
+  </header>
+  <section id="stats" class="stats"></section>
+  <section class="charts">
+    <div class="glass cc"><h3>Cumulative hours: submitted vs rejected</h3><div class="cv"><canvas id="c1"></canvas></div></div>
+    <div class="glass cc"><h3>Verdicts</h3><div class="cv"><canvas id="c2"></canvas></div></div>
+    <div class="glass cc"><h3>Grade distribution</h3><div class="cv"><canvas id="c3"></canvas></div></div>
+    <div class="glass cc"><h3>Hours by task (approved vs rejected)</h3><div class="cv"><canvas id="c4"></canvas></div></div>
+  </section>
+  <div class="bar">
+    <h2>Your reviews</h2>
+    <div class="ctl">
+      <input id="q" placeholder="Search task, ID or clip&hellip;">
+      <div class="seg" id="seg"><button data-f="all" class="on">All</button><button data-f="Approved">Approved</button><button data-f="Rejected">Rejected</button></div>
+      <button class="btn sm ghost" id="tog">Expand all</button>
+    </div>
+  </div>
+  <section id="list"></section>
+</main>
+
+<div id="md" class="md" hidden><div class="glass sheet"><button class="x" id="mx" aria-label="Close">&#10005;</button><div id="mb"></div></div></div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
+const $=s=>document.querySelector(s);
+const GR={B:['Brilliant',4],G:['Good',3],A:['Acceptable',2],P:['Poor',1]};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const ft=s=>{s=Math.round(s);const h=s/3600|0,m=(s%3600)/60|0;return h?`${h}:${p2(m)}:${p2(s%60)}`:`${m}:${p2(s%60)}`};
+const fd=s=>{s=Math.round(s);const h=s/3600|0,m=(s%3600)/60|0;return h?`${h}h ${m}m`:m?`${m}m ${s%60}s`:`${s}s`};
+const fdate=t=>t?new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'-';
+let D,CL=[],charts=[],F='all',Q='';
+
+/* ---------- login ---------- */
+async function login(u,p){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'portal',userId:u,password:p})}).then(r=>r.json());
+  if(r.status!=='success')throw new Error(r.message||'Sign-in failed.');
+  sessionStorage.setItem('pt',JSON.stringify({u,p}));show(r.data);
+}
+$('#lf').onsubmit=async e=>{
+  e.preventDefault();const b=$('#lb'),box=$('#lf');$('#err').textContent='';b.disabled=true;b.textContent='Signing in\u2026';
+  try{await login($('#uid').value.trim().toUpperCase(),$('#pw').value.trim())}
+  catch(x){$('#err').textContent=x.message;box.classList.remove('shake');void box.offsetWidth;box.classList.add('shake')}
+  b.disabled=false;b.textContent='Sign in';
+};
+$('#out').onclick=()=>{sessionStorage.removeItem('pt');$('#app').hidden=true;$('#login').hidden=false;$('#pw').value='';charts.forEach(c=>c.destroy());charts=[]};
+try{const s=JSON.parse(sessionStorage.getItem('pt')||'null');if(s)login(s.u,s.p).catch(()=>sessionStorage.removeItem('pt'))}catch(e){}
+
+/* ---------- data ---------- */
+function show(d){
+  D=d;CL=[];d.reviews.forEach(r=>r.clips.forEach(c=>{c.r=r;c.k=CL.length;CL.push(c)}));
+  $('#login').hidden=true;$('#app').hidden=false;window.scrollTo(0,0);
+  $('#hi').textContent=d.userId;
+  $('#sub').textContent=d.reviews.length?`Last review ${fdate(d.reviews[0].ts)}`:'No reviews yet';
+  stats();drawCharts();list();
+}
+function S(){
+  const sum=a=>a.reduce((x,c)=>x+c.len,0),ok=CL.filter(c=>c.v==='Approved'),rj=CL.filter(c=>c.v==='Rejected'),
+  gr=CL.filter(c=>GR[c.g]),sg=CL.flatMap(c=>c.segs);
+  return{n:CL.length,ok:ok.length,rj:rj.length,rate:CL.length?ok.length/CL.length:0,tot:sum(CL),okS:sum(ok),rjS:sum(rj),
+  q:gr.length?gr.reduce((x,c)=>x+GR[c.g][1],0)/gr.length:0,sg:sg.length,sgS:sg.reduce((x,s)=>x+Math.max(0,s.f-s.s),0)};
+}
+function stats(){
+  const s=S(),lab=['','Poor','Acceptable','Good','Brilliant'][Math.round(s.q)]||'-';
+  const c=(l,v,sub,col)=>`<div class="glass st"><span>${l}</span><b style="color:${col||'inherit'}">${v}</b><small>${sub}</small></div>`;
+  $('#stats').innerHTML=
+    c('Clips submitted',s.n,`${s.ok} approved &middot; ${s.rj} rejected`)+
+    c('Approval rate',Math.round(s.rate*100)+'%','of all clips','var(--ok)')+
+    c('Hours submitted',fd(s.tot),`avg clip ${s.n?ft(s.tot/s.n):'-'}`,'var(--acc)')+
+    c('Hours rejected',fd(s.rjS),`${s.tot?Math.round(s.rjS/s.tot*100):0}% of submitted time`,'var(--bad)')+
+    c('Quality score',s.q?s.q.toFixed(1)+' / 4':'-',lab+' on average','#bf5af2')+
+    c('Failed segments',s.sg,`${fd(s.sgS)} flagged`,'var(--wa)');
+}
+function drawCharts(){
+  charts.forEach(c=>c.destroy());charts=[];
+  const cs=getComputedStyle(document.body);Chart.defaults.font.family=cs.fontFamily;Chart.defaults.color=cs.getPropertyValue('--mut').trim()||'#6e6e73';
+  const mk=(id,cfg)=>charts.push(new Chart($(id),cfg)),grid={color:'rgba(128,128,128,.14)'},base={maintainAspectRatio:false};
+  const days={};
+  [...CL].sort((a,b)=>a.r.ts-b.r.ts).forEach(c=>{const k=new Date(c.r.ts).toISOString().slice(0,10),d=days[k]=days[k]||[0,0];d[0]+=c.len;if(c.v==='Rejected')d[1]+=c.len});
+  let a=0,b=0;const lab=Object.keys(days),sub=[],rej=[];
+  lab.forEach(k=>{a+=days[k][0];b+=days[k][1];sub.push(+(a/3600).toFixed(2));rej.push(+(b/3600).toFixed(2))});
+  mk('#c1',{type:'line',data:{labels:lab.map(k=>fdate(Date.parse(k))),datasets:[
+    {label:'Submitted (h)',data:sub,borderColor:'#0a84ff',backgroundColor:'#0a84ff26',fill:true,tension:.35,pointRadius:3},
+    {label:'Rejected (h)',data:rej,borderColor:'#e5484d',backgroundColor:'#e5484d26',fill:true,tension:.35,pointRadius:3}]},
+    options:{...base,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}},scales:{y:{beginAtZero:true,grid},x:{grid:{display:false}}}}});
+  const s=S();
+  mk('#c2',{type:'doughnut',data:{labels:['Approved','Rejected'],datasets:[{data:[s.ok,s.rj],backgroundColor:['#30a46c','#e5484d'],borderWidth:0,hoverOffset:8}]},
+    options:{...base,cutout:'72%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}}}});
+  mk('#c3',{type:'bar',data:{labels:Object.values(GR).map(g=>g[0]),datasets:[{data:Object.keys(GR).map(k=>CL.filter(c=>c.g===k).length),
+    backgroundColor:['#bf5af2','#30a46c','#f5a524','#e5484d'],borderRadius:10}]},
+    options:{...base,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0},grid},x:{grid:{display:false}}}}});
+  const T={};CL.forEach(c=>{const t=T[c.r.task]=T[c.r.task]||[0,0];t[c.v==='Approved'?0:1]+=c.len});
+  const top=Object.entries(T).sort((x,y)=>(y[1][0]+y[1][1])-(x[1][0]+x[1][1])).slice(0,6);
+  mk('#c4',{type:'bar',data:{labels:top.map(t=>t[0].length>26?t[0].slice(0,25)+'\u2026':t[0]),datasets:[
+    {label:'Approved (h)',data:top.map(t=>+(t[1][0]/3600).toFixed(2)),backgroundColor:'#30a46c',borderRadius:6},
+    {label:'Rejected (h)',data:top.map(t=>+(t[1][1]/3600).toFixed(2)),backgroundColor:'#e5484d',borderRadius:6}]},
+    options:{...base,indexAxis:'y',plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}},scales:{x:{stacked:true,grid},y:{stacked:true,grid:{display:false}}}}});
+}
+
+/* ---------- reviews list ---------- */
+const clipHTML=c=>`<div class="clip" onclick="clipModal(${c.k})"><div class="ct"><span class="tt">${esc(c.t)||'Untitled clip'}</span><span class="mut">${ft(c.len)}</span>`+
+  (GR[c.g]?`<span class="pill gd">${GR[c.g][0]}</span>`:'')+`<span class="pill ${c.v==='Approved'?'ok':'bad'}">${c.v}</span></div>`+
+  (c.segs.length?`<div class="sg">${c.segs.map(s=>`<span>&#9873; ${ft(s.s)}\u2013${ft(s.f)}${s.r?' &middot; '+esc(s.r):''}</span>`).join('')}</div>`:'')+`</div>`;
+function list(){
+  const q=Q.toLowerCase();let html='',n=0;
+  D.reviews.forEach(r=>{
+    const cs=r.clips.filter(c=>(F==='all'||c.v===F)&&(!q||(r.task+r.id+c.t).toLowerCase().includes(q)));
+    if(!cs.length)return;n++;
+    const ok=cs.filter(c=>c.v==='Approved').length,rj=cs.length-ok;
+    html+=`<article class="glass rv${n===1?' open':''}"><button class="rh" onclick="this.parentNode.classList.toggle('open')"><div><b>${esc(r.task)}</b><small>${r.id?esc(r.id):'Unlabelled'} &middot; ${fdate(r.ts)}</small></div>`+
+      `<div class="mt"><span>${cs.length} clip${cs.length>1?'s':''}</span><span>${fd(cs.reduce((x,c)=>x+c.len,0))}</span>`+
+      (ok?`<span class="pill ok">${ok} approved</span>`:'')+(rj?`<span class="pill bad">${rj} rejected</span>`:'')+`<i>&rsaquo;</i></div></button>`+
+      `<div class="rb"><div>${cs.map(clipHTML).join('')}</div></div></article>`;
+  });
+  $('#list').innerHTML=html||'<p class="mut c">No matching reviews.</p>';
+}
+$('#q').oninput=e=>{Q=e.target.value;list()};
+$('#seg').onclick=e=>{const b=e.target.closest('button');if(!b)return;F=b.dataset.f;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));list()};
+$('#tog').onclick=e=>{const all=[...document.querySelectorAll('.rv')],open=all.some(x=>!x.classList.contains('open'));all.forEach(x=>x.classList.toggle('open',open));e.target.textContent=open?'Collapse all':'Expand all'};
+
+/* ---------- modals ---------- */
+const openM=h=>{$('#mb').innerHTML=h;$('#md').hidden=false};
+$('#mx').onclick=()=>$('#md').hidden=true;
+$('#md').onclick=e=>{if(e.target.id==='md')$('#md').hidden=true};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#md').hidden=true});
+function clipModal(k){
+  const c=CL[k];
+  openM(`<h2>${esc(c.t)||'Untitled clip'}</h2><p class="mut">${esc(c.r.task)} &middot; ${c.r.id?esc(c.r.id):'Unlabelled'} &middot; ${fdate(c.r.ts)}</p>
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><span class="pill ${c.v==='Approved'?'ok':'bad'}">${c.v}</span>${GR[c.g]?`<span class="pill gd">${GR[c.g][0]}</span>`:''}<span class="pill">${ft(c.len)} long</span></div>
+  <h4>Reviewer feedback</h4><div class="note">${c.notes?esc(c.notes):'<span class="mut">No written feedback for this clip.</span>'}</div>
+  <h4>Failed segments (${c.segs.length})</h4>`+
+  (c.segs.length?c.segs.map(s=>`<div class="row"><span><b>${ft(s.s)} \u2013 ${ft(s.f)}</b>${s.f>s.s?` <span class="mut">(${fd(s.f-s.s)})</span>`:''}</span><span style="text-align:right">${esc(s.r)||'<span class="mut">No remark</span>'}</span></div>`).join(''):'<p class="mut">No failed segments flagged. Nice work.</p>'));
+}
+const THEMES={'Hands out of view':/hand|palm|wrist|\barms?\b/i,'Idle time / no activity':/idle|no action|no relevant|irrelevant/i,'Lighting':/light|dark/i,
+  'Field of view / angle':/fov|field of view|angle|narrow/i,'Orientation':/portrait|invert|flip|upside|orient/i,'Attire':/attire|dress|underwear|boxers|minimal/i};
+$('#ins').onclick=()=>{
+  const s=S(),T={};CL.forEach(c=>{const t=T[c.r.task]=T[c.r.task]||{n:0,ok:0};t.n++;if(c.v==='Approved')t.ok++});
+  let e=Object.entries(T).filter(t=>t[1].n>=2);if(!e.length)e=Object.entries(T);
+  e.sort((a,b)=>b[1].ok/b[1].n-a[1].ok/a[1].n||b[1].n-a[1].n);
+  const best=e[0],worst=e[e.length-1],pc=t=>t?`${esc(t[0])} <span class="mut">(${Math.round(t[1].ok/t[1].n*100)}% of ${t[1].n})</span>`:'-';
+  let streak=0;for(const c of CL){if(c.v!=='Approved')break;streak++}
+  const txt=CL.flatMap(c=>[...c.segs.map(x=>x.r),...(c.v==='Rejected'?[c.notes]:[])]);
+  const th=Object.entries(THEMES).map(([k,re])=>[k,txt.filter(t=>re.test(t||'')).length]).filter(t=>t[1]).sort((a,b)=>b[1]-a[1]),mx=th.length?th[0][1]:1;
+  const row=(a,b)=>`<div class="row"><span class="mut">${a}</span><span style="text-align:right">${b}</span></div>`;
+  openM(`<h2>Insights</h2><p class="mut">A closer look at your submissions.</p><h4>Highlights</h4>`+
+    row('Strongest task',pc(best))+row('Needs attention',e.length>1?pc(worst):'-')+row('Current approval streak',`${streak} clip${streak===1?'':'s'}`)+
+    row('Approved footage',fd(s.okS))+row('Rejected footage',fd(s.rjS))+row('Average clip length',s.n?ft(s.tot/s.n):'-')+row('Failed-segment time',fd(s.sgS))+
+    `<h4>Most common feedback themes</h4>`+(th.length?th.map(t=>`<div class="th"><span>${t[0]}</span><i style="width:${Math.max(8,t[1]/mx*100)}%"></i><span class="mut">${t[1]}</span></div>`).join(''):'<p class="mut">No recurring themes yet.</p>'));
+};
+</script>
+</body>
+</html>
