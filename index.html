@@ -54,8 +54,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">3. Date Task Was Submitted *</label>
-            <input type="date" id="submissionDate" name="submissionDate" required class="w-full p-2.5 text-sm border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
+            <label class="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">3. Capture Date *</label>
+            <input type="date" id="captureDate" name="captureDate" required class="w-full p-2.5 text-sm border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
           </div>
           <div>
             <label class="block text-xs font-bold uppercase mb-1 text-slate-700 dark:text-slate-300">4. Type of Activity *</label>
@@ -168,16 +168,15 @@
     }
 
     // ---------- Duration helpers ----------
-    // Accepted entries (minutes, then seconds): MM:SS  MM.SS  M:SS  M:S  M.SS  M.S  - or an already converted HH:MM:SS.
+    // Accepted entries (minutes, then seconds - 1 or 2 digits each, ":" or "." between): 05:30  5:30  12:5  05.30  5.3 ... - or an already converted HH:MM:SS.
     // Everything valid is converted to HH:MM:SS. Anything else prompts the reviewer to check the entry.
-    const DUR_HINT = 'use MM:SS, e.g. 05:30, 5:30, 05.30 or 5.3';
+    const DUR_HINT = 'use MM:SS, e.g. 05:30, 5:30, 12:5, 05.30 or 5.3';
     function parseDuration(raw) {
       const s = String(raw == null ? '' : raw).trim();
       let m = s.match(/^(\d{2}):(\d{2}):(\d{2})$/);
       if (m) return (+m[2] < 60 && +m[3] < 60) ? { sec: +m[1] * 3600 + +m[2] * 60 + +m[3] } : { err: 'minutes and seconds must be 00-59' };
-      m = s.match(/^(\d{2})[:.](\d{2})$/) || s.match(/^(\d)[:.](\d{1,2})$/);
+      m = s.match(/^(\d{1,2})[:.](\d{1,2})$/);
       if (m) return +m[2] < 60 ? { sec: +m[1] * 60 + +m[2] } : { err: 'seconds must be 00-59' };
-      if (/^\d{2}[:.]\d$/.test(s)) return { err: 'use two digits for the seconds, e.g. 12:05' };
       return { err: 'unrecognised format - ' + DUR_HINT };
     }
     function fmtHMS(sec) {
@@ -211,7 +210,7 @@
     }
     function setDateMax() {
       const d = new Date(), p = n => String(n).padStart(2, '0');
-      document.getElementById('submissionDate').max = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+      document.getElementById('captureDate').max = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
     }
     document.addEventListener('input', e => { if (e.target.classList && e.target.classList.contains('dur')) { checkDuration(e.target, false); updateTotalTaskLength(); } });
     document.addEventListener('change', e => { if (e.target.classList && e.target.classList.contains('dur')) { checkDuration(e.target, true); updateTotalTaskLength(); } });
@@ -402,7 +401,7 @@
         teamMemberId: teamSelect.value,
         activityType: activitySelect.value,
         selectedTask: taskSelect.value,
-        submissionDate: document.getElementById('submissionDate').value,
+        captureDate: document.getElementById('captureDate').value,
         videos: collectVideos()
       };
     }
@@ -430,7 +429,7 @@
       setSelectValue(reviewerSelect, data.reviewerId);
       setSelectValue(teamSelect, data.teamMemberId);
       setSelectValue(activitySelect, data.activityType);
-      document.getElementById('submissionDate').value = data.submissionDate || '';
+      document.getElementById('captureDate').value = data.captureDate || '';
 
       return loadTaskOptions(data.activityType, data.selectedTask).then(() => {
         document.getElementById('videoContainer').innerHTML = '';
@@ -536,7 +535,7 @@
       reviewerSelect.value = '';
       teamSelect.value = '';
       activitySelect.value = '';
-      document.getElementById('submissionDate').value = '';
+      document.getElementById('captureDate').value = '';
       setDateMax();
       taskSelect.innerHTML = '<option value="">Select Activity Type First...</option>';
       taskSelect.disabled = true;
@@ -590,7 +589,7 @@
         teamMemberId: teamSelect.value,
         activityType: activitySelect.value,
         selectedTask: taskSelect.value,
-        submissionDate: document.getElementById('submissionDate').value,
+        captureDate: document.getElementById('captureDate').value,
         totalVideos: document.getElementById('totalVideoCount').value,
         totalTaskLength: document.getElementById('totalTaskLength').value || '00:00:00'
       };
