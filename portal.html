@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>try{var t=localStorage.getItem("pt-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme="light"}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Review Portal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{--tx:#1d1d1f;--mut:#6e6e73;--gl:rgba(255,255,255,.58);--bd:rgba(255,255,255,.8);--sh:0 8px 32px rgba(31,38,135,.12);--ok:#30a46c;--bad:#e5484d;--acc:#0a84ff;--wa:#f5a524;--pill:rgba(120,120,140,.14);--in:rgba(255,255,255,.65)}
-@media(prefers-color-scheme:dark){:root{--tx:#f5f5f7;--mut:#a1a1a6;--gl:rgba(30,30,38,.55);--bd:rgba(255,255,255,.12);--sh:0 8px 32px rgba(0,0,0,.45);--pill:rgba(255,255,255,.1);--in:rgba(255,255,255,.08)}body{background:#0b0b12}}
+:root{--ok:#30a46c;--bad:#e5484d;--acc:#0a84ff;--wa:#f5a524;--tx:#1d1d1f;--mut:#6e6e73;--bg:#eef1f8;--gl:rgba(255,255,255,.58);--bd:rgba(255,255,255,.8);--sh:0 8px 32px rgba(31,38,135,.12);--pill:rgba(120,120,140,.14);--in:rgba(255,255,255,.65);--g1:#7db4ff80;--g2:#ff9fd066;--g3:#6fe8b955;color-scheme:light}
+:root[data-theme=dark]{--tx:#f5f5f7;--mut:#9b9ba5;--bg:#000;--gl:rgba(255,255,255,.065);--bd:rgba(255,255,255,.11);--sh:0 10px 40px rgba(0,0,0,.7);--pill:rgba(255,255,255,.09);--in:rgba(255,255,255,.07);--g1:#2563eb3d;--g2:#a855f730;--g3:#10b98124;color-scheme:dark}
 *{box-sizing:border-box;margin:0}[hidden]{display:none!important}
-body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,sans-serif;color:var(--tx);background:#eef1f8;min-height:100vh;-webkit-font-smoothing:antialiased}
-.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(45vw 45vw at 8% 8%,#7db4ff80,transparent),radial-gradient(45vw 45vw at 92% 18%,#ff9fd066,transparent),radial-gradient(55vw 55vw at 50% 105%,#6fe8b955,transparent)}
+body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,sans-serif;color:var(--tx);background:var(--bg);transition:background .35s,color .35s;min-height:100vh;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(45vw 45vw at 8% 8%,var(--g1),transparent),radial-gradient(45vw 45vw at 92% 18%,var(--g2),transparent),radial-gradient(55vw 55vw at 50% 105%,var(--g3),transparent)}
 .glass{background:var(--gl);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--bd);border-radius:24px;box-shadow:var(--sh)}
 .mut{color:var(--mut)}.c{text-align:center}
 #login{min-height:100vh;display:grid;place-items:center;padding:24px}
@@ -26,7 +27,13 @@ input:focus{border-color:var(--acc);box-shadow:0 0 0 4px #0a84ff30}
 .btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.6;cursor:wait}
 .btn.sm{padding:9px 16px;font-size:14px}.btn.ghost{background:var(--pill);color:var(--tx);box-shadow:none}
 .err{color:var(--bad);min-height:20px;font-size:13px}
-.wrap{max-width:1100px;margin:0 auto;padding:36px 20px 90px}
+.wrap{max-width:1100px;margin:0 auto;padding:76px 20px 90px}
+.day{font-size:12.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin:28px 4px 12px}.day:first-child{margin-top:0}
+.tg{position:fixed;top:16px;right:16px;z-index:30;width:84px;height:42px;padding:0 4px;border-radius:99px;border:1px solid var(--bd);background:var(--gl);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);box-shadow:var(--sh);cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--tx);font:inherit}
+.tg i{position:absolute;top:4px;left:4px;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#ffd666,#ff9f0a);box-shadow:0 2px 10px #0005;transition:transform .35s cubic-bezier(.4,.2,.2,1),background .35s}
+:root[data-theme=dark] .tg i{transform:translateX(42px);background:linear-gradient(135deg,#6e6bff,#bf5af2)}
+.tg b{position:relative;z-index:1;width:32px;margin:0 2px;text-align:center;font-weight:400;font-size:17px;line-height:32px;pointer-events:none}
+.tg:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:28px}
 .acts{display:flex;gap:10px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:16px;margin-bottom:20px}
@@ -64,12 +71,13 @@ input:focus{border-color:var(--acc);box-shadow:0 0 0 4px #0a84ff30}
 </head>
 <body>
 <div class="bg"></div>
+<button id="theme" class="tg" role="switch" aria-checked="false" aria-label="Dark mode" title="Switch between light and dark"><i></i><b>&#9728;</b><b>&#9790;</b></button>
 
 <!-- STEP 1: LOGIN -->
 <section id="login">
   <form id="lf" class="glass login">
     <div class="logo">&#9654;</div>
-    <h1>Review Portal</h1>
+    <h1>My Reviews Portal</h1>
     <p class="mut">Sign in to see how your video submissions were reviewed.</p>
     <label>User ID<input id="uid" placeholder="e.g. TTA057" autocomplete="username" required></label>
     <label>Password<input id="pw" type="password" placeholder="Your password" autocomplete="current-password" required></label>
@@ -106,7 +114,6 @@ input:focus{border-color:var(--acc);box-shadow:0 0 0 4px #0a84ff30}
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbztYONa8Z4PQBPv-6HhlTJsJn2_daa7hpqyjWLIKnu9i0kNaN75WVa0bJ56K8U-TQRJ/exec';
-// const API='https://script.google.com/macros/s/AKfycbzsn9sz_WGXfZeb_FEYwNhkBUBDb7ND48eXiEy_WcydO42Tk3qHpdEwfrcrnqJiOtvr/exec';
 const $=s=>document.querySelector(s);
 const GR={B:['Brilliant',4],G:['Good',3],A:['Acceptable',2],P:['Poor',1]};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -115,6 +122,12 @@ const ft=s=>{s=Math.round(s);const h=s/3600|0,m=(s%3600)/60|0;return h?`${h}:${p
 const fd=s=>{s=Math.round(s);const h=s/3600|0,m=(s%3600)/60|0;return h?`${h}h ${m}m`:m?`${m}m ${s%60}s`:`${s}s`};
 const fdate=t=>t?new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'-';
 let D,CL=[],charts=[],F='all',Q='';
+const fcap=s=>{if(!s)return'-';const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})};
+const fday=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c).toLocaleDateString(undefined,{day:'numeric',month:'short'})};
+const root=document.documentElement;
+function applyTheme(t,save){root.dataset.theme=t;$('#theme').setAttribute('aria-checked',String(t==='dark'));if(save)try{localStorage.setItem('pt-theme',t)}catch(e){}if(D&&!$('#app').hidden)drawCharts()}
+$('#theme').onclick=()=>applyTheme(root.dataset.theme==='dark'?'light':'dark',true);
+applyTheme(root.dataset.theme||'light');
 
 /* ---------- login ---------- */
 async function login(u,p){
@@ -136,7 +149,7 @@ function show(d){
   D=d;CL=[];d.reviews.forEach(r=>r.clips.forEach(c=>{c.r=r;c.k=CL.length;CL.push(c)}));
   $('#login').hidden=true;$('#app').hidden=false;window.scrollTo(0,0);
   $('#hi').textContent=d.userId;
-  $('#sub').textContent=d.reviews.length?`Last review ${fdate(d.reviews[0].ts)}`:'No reviews yet';
+  $('#sub').textContent=d.reviews.length?`Latest capture date: ${fcap(d.reviews[0].cap)}`:'No reviews yet';
   stats();drawCharts();list();
 }
 function S(){
@@ -161,10 +174,11 @@ function drawCharts(){
   const cs=getComputedStyle(document.body);Chart.defaults.font.family=cs.fontFamily;Chart.defaults.color=cs.getPropertyValue('--mut').trim()||'#6e6e73';
   const mk=(id,cfg)=>charts.push(new Chart($(id),cfg)),grid={color:'rgba(128,128,128,.14)'},base={maintainAspectRatio:false};
   const days={};
-  [...CL].sort((a,b)=>a.r.ts-b.r.ts).forEach(c=>{const k=new Date(c.r.ts).toISOString().slice(0,10),d=days[k]=days[k]||[0,0];d[0]+=c.len;if(c.v==='Rejected')d[1]+=c.len});
+  const dk=c=>c.r.cap||new Date(c.r.ts).toISOString().slice(0,10);
+  [...CL].sort((a,b)=>dk(a).localeCompare(dk(b))).forEach(c=>{const k=dk(c),d=days[k]=days[k]||[0,0];d[0]+=c.len;if(c.v==='Rejected')d[1]+=c.len});
   let a=0,b=0;const lab=Object.keys(days),sub=[],rej=[];
   lab.forEach(k=>{a+=days[k][0];b+=days[k][1];sub.push(+(a/3600).toFixed(2));rej.push(+(b/3600).toFixed(2))});
-  mk('#c1',{type:'line',data:{labels:lab.map(k=>fdate(Date.parse(k))),datasets:[
+  mk('#c1',{type:'line',data:{labels:lab.map(fday),datasets:[
     {label:'Submitted (h)',data:sub,borderColor:'#0a84ff',backgroundColor:'#0a84ff26',fill:true,tension:.35,pointRadius:3},
     {label:'Rejected (h)',data:rej,borderColor:'#e5484d',backgroundColor:'#e5484d26',fill:true,tension:.35,pointRadius:3}]},
     options:{...base,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}},scales:{y:{beginAtZero:true,grid},x:{grid:{display:false}}}}});
@@ -187,12 +201,13 @@ const clipHTML=c=>`<div class="clip" onclick="clipModal(${c.k})"><div class="ct"
   (GR[c.g]?`<span class="pill gd">${GR[c.g][0]}</span>`:'')+`<span class="pill ${c.v==='Approved'?'ok':'bad'}">${c.v}</span></div>`+
   (c.segs.length?`<div class="sg">${c.segs.map(s=>`<span>&#9873; ${ft(s.s)}\u2013${ft(s.f)}${s.r?' &middot; '+esc(s.r):''}</span>`).join('')}</div>`:'')+`</div>`;
 function list(){
-  const q=Q.toLowerCase();let html='',n=0;
+  const q=Q.toLowerCase();let html='',n=0,last=null;
   D.reviews.forEach(r=>{
     const cs=r.clips.filter(c=>(F==='all'||c.v===F)&&(!q||(r.task+r.id+c.t).toLowerCase().includes(q)));
     if(!cs.length)return;n++;
+    if(r.cap!==last){html+=`<h3 class="day">${fcap(r.cap)}</h3>`;last=r.cap}
     const ok=cs.filter(c=>c.v==='Approved').length,rj=cs.length-ok;
-    html+=`<article class="glass rv${n===1?' open':''}"><button class="rh" onclick="this.parentNode.classList.toggle('open')"><div><b>${esc(r.task)}</b><small>${r.id?esc(r.id):'Unlabelled'} &middot; ${fdate(r.ts)}</small></div>`+
+    html+=`<article class="glass rv${n===1?' open':''}"><button class="rh" onclick="this.parentNode.classList.toggle('open')"><div><b>${esc(r.task)}</b><small>${r.id?esc(r.id):'Unlabelled'} &middot; ${esc(r.activity)||'-'}</small></div>`+
       `<div class="mt"><span>${cs.length} clip${cs.length>1?'s':''}</span><span>${fd(cs.reduce((x,c)=>x+c.len,0))}</span>`+
       (ok?`<span class="pill ok">${ok} approved</span>`:'')+(rj?`<span class="pill bad">${rj} rejected</span>`:'')+`<i>&rsaquo;</i></div></button>`+
       `<div class="rb"><div>${cs.map(clipHTML).join('')}</div></div></article>`;
@@ -210,7 +225,7 @@ $('#md').onclick=e=>{if(e.target.id==='md')$('#md').hidden=true};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#md').hidden=true});
 function clipModal(k){
   const c=CL[k];
-  openM(`<h2>${esc(c.t)||'Untitled clip'}</h2><p class="mut">${esc(c.r.task)} &middot; ${c.r.id?esc(c.r.id):'Unlabelled'} &middot; ${fdate(c.r.ts)}</p>
+  openM(`<h2>${esc(c.t)||'Untitled clip'}</h2><p class="mut">${esc(c.r.task)} &middot; ${c.r.id?esc(c.r.id):'Unlabelled'} &middot; Captured ${fcap(c.r.cap)}</p>
   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><span class="pill ${c.v==='Approved'?'ok':'bad'}">${c.v}</span>${GR[c.g]?`<span class="pill gd">${GR[c.g][0]}</span>`:''}<span class="pill">${ft(c.len)} long</span></div>
   <h4>Reviewer feedback</h4><div class="note">${c.notes?esc(c.notes):'<span class="mut">No written feedback for this clip.</span>'}</div>
   <h4>Failed segments (${c.segs.length})</h4>`+
